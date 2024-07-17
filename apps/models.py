@@ -1,10 +1,7 @@
-
 from datetime import timedelta
-
-from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.db.models import Model, JSONField, TextChoices, OneToOneField
+from django.db.models import JSONField, TextChoices, OneToOneField
 from django.utils.text import slugify
 from django.utils.timezone import now
 from django_ckeditor_5.fields import CKEditor5Field
@@ -15,9 +12,6 @@ class User(AbstractUser):
     @property
     def cart_count(self):
         return self.cart_items.count()
-
-
-# class CreateBaseModel(Model):
 
 
 class Category(MPTTModel):
@@ -43,7 +37,8 @@ class Category(MPTTModel):
         return self.name
 
 
-class Product(Model):
+class Product(models.Model):
+    name = models.CharField(max_length=255)
     title = models.CharField(max_length=355)
     price = models.DecimalField(max_digits=7, decimal_places=2)
     price_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
@@ -52,8 +47,8 @@ class Product(Model):
     description = JSONField()
     short_description = CKEditor5Field()
     long_description = CKEditor5Field()
-    category = models.ForeignKey('apps.Category', models.CASCADE)
-    tags = models.ManyToManyField('apps.Tag', related_name='tag')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    tags = models.ManyToManyField('Tag', related_name='tag')
     updated_at = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -68,13 +63,17 @@ class Product(Model):
     def is_new(self) -> bool:
         return self.created_at >= now() - timedelta(days=7)
 
+    @property
+    def in_stock(self):
+        return self.quantity > 0
 
-class ProductImage(Model):
+
+class ProductImage(models.Model):
     image = models.ImageField(upload_to='products/%Y/%m/%d/')
-    product = models.ForeignKey('apps.Product', models.CASCADE, related_name='images')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
 
 
-class Tag(Model):
+class Tag(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True, editable=False)
 
@@ -90,35 +89,32 @@ class Tag(Model):
         super().save(force_insert, force_update, using, update_fields)
 
 
-class Review(Model):
+class Review(models.Model):
     name = models.CharField(max_length=255)
     email = models.EmailField(max_length=255, null=True, blank=True)
     description = models.TextField()
     comment_status = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    product = models.ForeignKey('apps.Product', models.CASCADE, related_name='reviw')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
 
     def __str__(self):
         return self.name
 
 
-class Favorite(Model):
-    user = models.ForeignKey(User, models.CASCADE)
-    product = models.ForeignKey('apps.Product', models.CASCADE)
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('user', 'product')
 
 
-class CartItem(Model):
-    product = models.ForeignKey('apps.Product', models.CASCADE)
-    user = models.ForeignKey('apps.User', models.CASCADE, related_name='cart_items')
+class CartItem(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart_items')
     quantity = models.PositiveIntegerField(default=1)
 
-    # class Meta:
-    #     unique_together = ('user', 'product')
-    #
     def __str__(self):
         return f"{self.quantity} x {self.product.title}"
 
@@ -127,7 +123,7 @@ class CartItem(Model):
         return self.quantity * self.product.new_price
 
 
-class Order(Model):
+class Order(models.Model):
     class StatusMethod(TextChoices):
         COMPLETED = 'completed', 'Completed'
         PROCESSING = 'processing', 'Processing'
@@ -138,17 +134,17 @@ class Order(Model):
         PAYPAL = 'paypal', 'Paypal'
         CREDIT_CARD = 'credit_card', 'Credit_card'
 
-    status = models.CharField(max_length=255, choices=StatusMethod)
-    payment_method = models.CharField(max_length=255, choices=PaymentMethod)
-    address = models.ForeignKey('apps.Address', models.CASCADE)
-    owner = models.ForeignKey('apps.User', models.CASCADE, related_name='orders')
+    status = models.CharField(max_length=255, choices=StatusMethod.choices)
+    payment_method = models.CharField(max_length=255, choices=PaymentMethod.choices)
+    address = models.ForeignKey('Address', on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
 
     def __str__(self):
         return f'Order {self.id} - {self.status}'
 
 
 class Address(models.Model):
-    user = models.ForeignKey('apps.User', models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=255)
     street = models.CharField(max_length=255)
     zip_code = models.PositiveIntegerField()
@@ -156,18 +152,18 @@ class Address(models.Model):
     phone = models.CharField(max_length=255)
 
 
-class OrderItem(Model):
-    product = models.ForeignKey('apps.Product', models.CASCADE)
-    order = models.ForeignKey('apps.Order', models.CASCADE, related_name='items')
+class OrderItem(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     quantity = models.PositiveIntegerField(default=0)
 
 
-class CreditCard(Model):
-    order = OneToOneField('apps.Order', models.CASCADE)
+class CreditCard(models.Model):
+    order = OneToOneField(Order, on_delete=models.CASCADE)
     number = models.CharField(max_length=255)
     cvv = models.CharField(max_length=255)
     expire_date = models.DateField()
 
 
-class SiteSettings(Model):
+class SiteSettings(models.Model):
     tax = models.PositiveIntegerField()

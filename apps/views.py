@@ -27,10 +27,10 @@ class ProductListView(CategoryMixin, ListView):
 
     def get_queryset(self):
 
-        if cache.get('product_list'):
-            return cache.get('product_list')
+        # if cache.get('product_list'):
+        #     return cache.get('product_list')
         qs = super().get_queryset()
-        cache.set('product_list', qs, timeout=7200)
+        # cache.set('product_list', qs, timeout=7200)
 
         category_slug = self.request.GET.get('category')
         if category_slug:
@@ -106,7 +106,6 @@ class CustomLogoutView(View):
 
 
 class CartListView(CategoryMixin, ListView):
-    # queryset = Category.objects.prefetch_related('product') # 1 -> N
     queryset = CartItem.objects.select_related('product')  # N -> 1
     template_name = 'apps/shop/shopping_cart.html'
     context_object_name = 'cart_items'

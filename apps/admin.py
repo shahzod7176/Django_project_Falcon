@@ -1,9 +1,8 @@
-
 import import_export
 from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
 
-from apps.models import Product, Category, ProductImage
+from apps.models import Product, Category, ProductImage, Tag
 
 
 class ProductImageStackedInline(admin.StackedInline):
@@ -26,4 +25,9 @@ class ProductModelAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryModelAdmin(ImportExportModelAdmin):
+    pass
+
+
+@admin.register(Tag)
+class TagModelAdmin(ImportExportModelAdmin):
     pass
