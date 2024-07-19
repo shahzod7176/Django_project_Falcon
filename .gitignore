@@ -1,5 +1,4 @@
 .idea
 .venv
 .env
-apps/migrations
 media
