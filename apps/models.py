@@ -158,6 +158,7 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(default=0)
 
 
+
 class CreditCard(models.Model):
     order = OneToOneField(Order, on_delete=models.CASCADE)
     number = models.CharField(max_length=255)

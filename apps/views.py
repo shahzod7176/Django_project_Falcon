@@ -23,7 +23,7 @@ class ProductListView(CategoryMixin, ListView):
     queryset = Product.objects.select_related('category').prefetch_related('images').order_by('id')
     template_name = 'apps/product/product-list.html'
     context_object_name = 'products'
-    paginate_by = 10
+    paginate_by = 3
 
     def get_queryset(self):
 
