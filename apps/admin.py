@@ -25,7 +25,11 @@ class ProductModelAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryModelAdmin(ImportExportModelAdmin):
-    pass
+    # pass
+    actions = ['export_as_csv']
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(parent__isnull=True)
 
 
 @admin.register(Tag)
