@@ -166,3 +166,8 @@ class CustomSettings(LoginRequiredMixin, CategoryMixin, UpdateView):
     def get_object(self, queryset=None):
         return self.request.user
 
+
+class OrderPdfView(View):
+    def get(self, request, *args, **kwargs):
+        pk = kwargs['pk']
+        order = get_object_or_404(pk=pk)

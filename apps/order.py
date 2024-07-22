@@ -1,10 +1,10 @@
 from django.db.models import Model, CharField, ForeignKey, CASCADE, TextChoices, PositiveIntegerField, OneToOneField, \
     DateField, Sum, F
 
-from apps.models import CreatedBaseModel
+from apps.models import MPTTModel
 
 
-class Order(CreatedBaseModel):
+class Order(MPTTModel):
     class Status(TextChoices):
         PROCESSING = 'processing', 'Processing'
         ON_HOLD = 'on_hold', 'On Hold'
@@ -38,7 +38,7 @@ class OrderItem(Model):
         return self.quantity * self.product.new_price
 
 
-class CreditCard(CreatedBaseModel):
+class CreditCard(MPTTModel):
     order = OneToOneField('apps.Order', CASCADE)
     number = CharField(max_length=16)
     cvv = CharField(max_length=3)
