@@ -30,5 +30,6 @@ urlpatterns = [
 
     path('addres-create', AddressCreateView.as_view(), name='address_page'),
     path('address-update/<int:pk>/', AddressUpdateView.as_view(), name='update_address'),
+    
 
 ]

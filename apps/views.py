@@ -147,8 +147,8 @@ class AddressUpdateView(CategoryMixin, UpdateView):
     success_url = reverse_lazy('checkout_page')
 
 
-class CheckoutListView(LoginRequiredMixin, CategoryMixin, ListView):
 
+class CheckoutListView(LoginRequiredMixin, CategoryMixin, ListView):
     queryset = CartItem.objects.all()
     template_name = 'apps/shop/checkout.html'
     context_object_name = 'cart_items'
@@ -166,8 +166,3 @@ class CustomSettings(LoginRequiredMixin, CategoryMixin, UpdateView):
     def get_object(self, queryset=None):
         return self.request.user
 
-
-class OrderPdfView(View):
-    def get(self, request, *args, **kwargs):
-        pk = kwargs['pk']
-        order = get_object_or_404(pk=pk)
